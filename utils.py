@@ -1,6 +1,7 @@
 import ast
 import datetime
 import os
+import textwrap
 
 def clear(): os.system('clear' if os.name == 'posix' else 'clear')
 
@@ -28,6 +29,9 @@ def printOpts(opt_layout, videoIds = 0):
     elif opt_layout == 'playlists':
         print('\nI - Página inicial    F - Favoritos    Q - Buscar    C - Criar playlist    U - Meu perfil    S - Sair da conta')
         opcoes = ['I', 'F', 'Q', 'C', 'U', 'S']
+    elif opt_layout == 'video_page':
+        print('\nI - Página inicial    C - Curtir    D - Descurtir    A - Adicionar à playlist    S - Sair da conta')
+        opcoes = ['I', 'C', 'D', 'A', 'S']
     else:
         print('C - Cadastrar    L - Efetuar login    S - Sair do FeiTV')
         opcoes = ['C', 'L', 'S']
@@ -84,6 +88,19 @@ def getVideos():
     with open('./data/videos.txt', 'r') as f:
         try: return ast.literal_eval(f.read())
         except: return []
+
+def getAllFavorites():
+    with open('./data/favs.txt', 'r') as f:
+        try: return ast.literal_eval(f.read())
+        except: return []
+
+def getUserFavorites(username):
+    with open('./data/favs.txt', 'r') as f:
+        try: 
+            favs = ast.literal_eval(f.read())
+            for fav in favs:
+                if fav['user'] == username: return fav
+        except: return {"user": username, "curtidos": []}
 
 def getAllPlaylists():
     with open('./data/playlists.txt', 'r') as f:
@@ -163,6 +180,59 @@ def init(auth_status):
         
     return opt
 
+def videoDetails(video_id):
+    clear()
+    printLogo()
+    videos = getVideos()
+    for i in range(len(videos)):
+        if videos[i]['id'] == video_id: video = videos[i]
+
+    print('\n\033[1;97m########################################################## INFORMAÇÕES DE VÍDEO #########################################################\033[0m')
+
+    print(f'\033[1;94mTítulo:\033[0m {video['titulo']}')
+    print(f'\033[1;94mDescrição:\033[0m {textwrap.fill(video['descricao'], width=80)}')
+    print(f'\033[1;94mUploader:\033[0m {video['uploader']}')
+    print(f'\033[1;94mDuração:\033[0m {video['duracao']}    \033[1;94mData de envio:\033[0m {video['data_envio']}')
+    print(f'\033[1;94mLikes:\033[0m {video['likes']}    \033[1;94mDislikes:\033[0m {video['dislikes']}')
+
+    opcoes = printOpts('video_page')
+    opt = input().upper()
+    while opt not in opcoes:
+        print('\033[1;91mOpção inválida, escolha entre as opções disponíveis de acordo com a ação desejada\033[0m')
+        opt = input().upper()
+
+    return opt
+
+def curtir(username, video_id):
+    videos = getVideos()
+    fav = getUserFavorites(username)
+    operacao = 'add_like'
+    
+    for i in range(len(fav['curtidos'])):
+        if video_id == fav['curtidos'][i]:
+            operacao = 'remove_like'
+            fav['curtidos'].pop(i)
+            break
+    else:
+        fav['curtidos'].append(video_id)
+    
+    for video in videos:
+        if video['id'] == video_id:
+            if operacao == 'add_like': video['likes'] += 1
+            else: video['likes'] -= 1
+    
+    favs = getAllFavorites()
+
+    for i in range(len(favs)):
+        if favs[i]['user'] == fav['user']: 
+            favs[i] = fav
+            break
+    else:
+        favs.append(fav)
+
+    with open('./data/favs.txt', 'w') as f: f.write(str(favs))
+    with open('./data/videos.txt', 'w') as f: f.write(str(videos))
+
 def criarPlaylist(username):
     print('\033[1;94mPara cancelar o processo de criar uma nova playlist, digite e envie 0.\033[0m')
     n_playlist = ''
@@ -188,6 +258,7 @@ def playlists(username):
     print('\n\033[1;97m####################################################### MINHAS PLAYLISTS ######################################################\033[0m')
     print()
     playlists = getUserPlaylists(username)
+    playlist_ids = []
 
     if len(playlists) == 0: print('Nada a ver aqui por enquanto...')
     else:
@@ -195,11 +266,12 @@ def playlists(username):
         for i in range(117): print('\033[1;94m+\033[0m', end='')
         print()
         for i in range(len(playlists)):
+            playlist_ids.append(playlists[i]['id'])
             print(f'\033[1;94m|\033[0m {i + 1:^10} \033[1;94m|\033[0m {playlists[i]['nome']:^100} \033[1;94m|\033[0m')
         
         print('\nPara selecionar uma playlist, envie o número de ID dela')
     
-    opcoes = printOpts('playlists', len(playlists))
+    opcoes = printOpts('playlists', playlist_ids)
 
     opt = input().upper()
     while opt not in opcoes:

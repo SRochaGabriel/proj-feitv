@@ -1,4 +1,4 @@
-from utils import init, cadastro, login, uploadVideo, clear, perfil, deletarConta, editarConta, playlists, criarPlaylist
+from utils import init, cadastro, login, uploadVideo, clear, perfil, deletarConta, editarConta, playlists, criarPlaylist, videoDetails, curtir
 import os
 
 if not os.path.exists('./data/users.txt'): open('./data/users.txt', 'a')
@@ -36,6 +36,16 @@ while True:
             if opt == 'C':
                 opt = 'P'
                 criarPlaylist(current_user['nome'])
+        if pagina == 'video_page':
+            if opt == 'C': 
+                curtir(current_user['nome'], video_id)
+                opt = video_id
+                pagina = 'inicial'
+        if pagina == 'inicial' or pagina == 'perfil':
+            if opt.isdigit():
+                video_id = opt
+                opt = videoDetails(video_id)
+                pagina = 'video_page'
             
         if opt == 'U': 
             pagina = 'perfil'
