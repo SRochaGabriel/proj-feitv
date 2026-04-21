@@ -1,10 +1,11 @@
-from utils import init, cadastro, login, uploadVideo, clear, perfil, deletarConta, editarConta, playlists, criarPlaylist, videoDetails, curtir
+from utils import init, cadastro, login, uploadVideo, clear, perfil, deletarConta, editarConta, playlists, criarPlaylist, videoDetails, curtir_descurtir
 import os
 
 if not os.path.exists('./data/users.txt'): open('./data/users.txt', 'a')
 if not os.path.exists('./data/videos.txt'): open('./data/videos.txt', 'a')
 if not os.path.exists('./data/playlists.txt'): open('./data/playlists.txt', 'a')
 if not os.path.exists('./data/favs.txt'): open('./data/favs.txt', 'a')
+if not os.path.exists('./data/dislikes.txt'): open('./data/dislikes.txt', 'a')
 
 auth_status = False
 current_user = {}
@@ -38,7 +39,11 @@ while True:
                 criarPlaylist(current_user['nome'])
         if pagina == 'video_page':
             if opt == 'C': 
-                curtir(current_user['nome'], video_id)
+                curtir_descurtir(current_user['nome'], video_id, 'curtir')
+                opt = video_id
+                pagina = 'inicial'
+            if opt == 'D':
+                curtir_descurtir(current_user['nome'], video_id, 'descurtir')
                 opt = video_id
                 pagina = 'inicial'
         if pagina == 'inicial' or pagina == 'perfil':

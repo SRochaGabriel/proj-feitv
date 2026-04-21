@@ -42,19 +42,28 @@ def printOpts(opt_layout, videoIds = 0):
 
     return opcoes
 
-def printVideosTable(table_type, table_data):
-    headers = ['ID', 'TÍTULO', 'DURACAO', 'ENVIADO POR', 'DATA DE ENVIO', 'LIKES', 'DISLIKES']
-    campos = ['id', 'titulo', 'duracao', 'uploader', 'data_envio', 'likes', 'dislikes']
-
+def printTables(table_type, table_data, table_order = 'recentes'):
     if len(table_data) == 0:
-        print('Nada a ver aqui por enquanto...')
-        return 0
+            print('Nada a ver aqui por enquanto...')
+            return 0
 
-    if table_type == 'recentes':
-        table_data.reverse()
-        table_data = table_data[:10]
-    
-    tamanhos_coluna = [5, 35, 10, 35, 15, 10, 10]
+    if table_type == 'videos':
+        headers = ['ID', 'TÍTULO', 'DURACAO', 'ENVIADO POR', 'DATA DE ENVIO', 'LIKES', 'DISLIKES']
+        campos = ['id', 'titulo', 'duracao', 'uploader', 'data_envio', 'likes', 'dislikes']
+
+        if table_order == 'recentes':
+            table_data.reverse()
+            table_data = table_data[:10]
+        
+        tamanhos_coluna = [5, 35, 10, 35, 15, 10, 10]
+        length_table = 8
+    elif table_type == 'playlists':
+        headers = ['ID', 'NOME']
+        campos = ['id', 'nome']
+        tamanhos_coluna = [10, 100]
+        length_table = 3
+
+    for tamanho in tamanhos_coluna: length_table += tamanho
 
     for linha in range(len(table_data)):
         if linha == 0:
@@ -62,7 +71,7 @@ def printVideosTable(table_type, table_data):
             for i in range(len(tamanhos_coluna)):
                 print(f'\033[0;33m{headers[i]:^{tamanhos_coluna[i]}}\033[0m', end='\033[1;94m|\033[0m')
             print()
-            for i in range(128): print('\033[1;94m#\033[0m', end='')
+            for i in range(length_table): print('\033[1;94m#\033[0m', end='')
             print()
         
         print('\033[1;94m|\033[0m', end='')
@@ -74,8 +83,9 @@ def printVideosTable(table_type, table_data):
         print()
     
     ids = []
-    for video in table_data:
-        ids.append(video['id'])
+    for item in table_data:
+        try: ids.append(item['id'])
+        except: ids.append(item['nome'])
 
     return ids
 
@@ -89,18 +99,22 @@ def getVideos():
         try: return ast.literal_eval(f.read())
         except: return []
 
-def getAllFavorites():
-    with open('./data/favs.txt', 'r') as f:
+def getAllFavoritesOrDislikes(file):
+    with open(f'./data/{file}.txt', 'r') as f:
         try: return ast.literal_eval(f.read())
         except: return []
 
-def getUserFavorites(username):
-    with open('./data/favs.txt', 'r') as f:
+def getUserFavoritesOrDisliked(username, file):
+    with open(f'./data/{file}.txt', 'r') as f:
         try: 
-            favs = ast.literal_eval(f.read())
-            for fav in favs:
-                if fav['user'] == username: return fav
-        except: return {"user": username, "curtidos": []}
+            items = ast.literal_eval(f.read())
+            for item in items:
+                if item['user'] == username: return item
+        except:
+            if file == 'favs':
+                return {"user": username, "curtidos": []}
+            else:
+                return {"user": username, "descurtidos": []}
 
 def getAllPlaylists():
     with open('./data/playlists.txt', 'r') as f:
@@ -170,7 +184,7 @@ def init(auth_status):
     else:
         print('\n\033[1;97m##################################################### VÍDEOS MAIS RECENTES #####################################################\033[0m')
         print()
-        videoIds = printVideosTable('recentes', getVideos())
+        videoIds = printTables('videos', getVideos(), 'recentes')
         opcoes = printOpts('gerais', videoIds)
 
     opt = input().upper()
@@ -203,34 +217,83 @@ def videoDetails(video_id):
 
     return opt
 
-def curtir(username, video_id):
+def curtir_descurtir(username, video_id, funcao):
     videos = getVideos()
-    fav = getUserFavorites(username)
-    operacao = 'add_like'
-    
-    for i in range(len(fav['curtidos'])):
-        if video_id == fav['curtidos'][i]:
+    fav = getUserFavoritesOrDisliked(username, 'favs')
+    disliked = getUserFavoritesOrDisliked(username, 'dislikes')
+    init_fav = fav['curtidos'][:]
+    init_disliked = disliked['descurtidos'][:]
+
+    if funcao == 'curtir':
+        operacao = 'add_like'
+
+        if video_id in fav['curtidos']:
             operacao = 'remove_like'
-            fav['curtidos'].pop(i)
-            break
+            fav['curtidos'].remove(video_id)
+        else:
+            fav['curtidos'].append(video_id)
+
+        # try:
+        #     i = fav['curtidos'].index(video_id)
+        #     operacao = 'remove_like'
+        #     fav['curtidos'].pop(i)
+        # except: fav['curtidos'].append(video_id)
+        
+        # for video in videos:
+        #     if video['id'] == video_id:
+        #         if operacao == 'add_like': video['likes'] += 1
+        #         else: video['likes'] -= 1
     else:
-        fav['curtidos'].append(video_id)
-    
+        operacao = 'add_dislike'
+
+        if video_id in disliked['descurtidos']:
+            operacao = 'remove_dislike'
+            disliked['descurtidos'].remove(video_id)
+        else:
+            disliked['descurtidos'].append(video_id)
+        # try:
+        #     i = disliked['descurtidos'].index(video_id)
+        #     operacao = 'remove_dislike'
+        #     disliked['descurtidos'].pop(i)
+        # except: disliked['descurtidos'].append(video_id)
+        
     for video in videos:
         if video['id'] == video_id:
-            if operacao == 'add_like': video['likes'] += 1
-            else: video['likes'] -= 1
-    
-    favs = getAllFavorites()
+            if operacao == 'add_like' and video_id in disliked['descurtidos']: 
+                video['likes'] += 1
+                video['dislikes'] -= 1
+                disliked['descurtidos'].remove(video_id)
+            elif operacao == 'add_dislike' and video_id in fav['curtidos']: 
+                video['likes'] -= 1
+                video['dislikes'] += 1
+                fav['curtidos'].remove(video_id)
+            elif operacao == 'add_like' and video_id not in disliked['descurtidos']: video['likes'] += 1
+            elif operacao == 'add_dislike' and video_id not in fav['curtidos']: video['dislikes'] += 1
+            elif operacao == 'remove_like': video['likes'] -= 1
+            elif operacao == 'remove_dislike': video['dislikes'] -= 1 
 
-    for i in range(len(favs)):
-        if favs[i]['user'] == fav['user']: 
-            favs[i] = fav
-            break
-    else:
-        favs.append(fav)
+    if init_fav != fav['curtidos']:
+        favs = getAllFavoritesOrDislikes('favs')
+        for i in range(len(favs)):
+            if favs[i]['user'] == fav['user'] and favs[i] != fav: 
+                favs[i] = fav
+                with open('./data/favs.txt', 'w') as f: f.write(str(favs))
+                break
+        else:
+            favs.append(fav)
+            with open('./data/favs.txt', 'w') as f: f.write(str(favs))
 
-    with open('./data/favs.txt', 'w') as f: f.write(str(favs))
+    if init_disliked != disliked['descurtidos']:
+        dislikes = getAllFavoritesOrDislikes('dislikes')
+        for i in range(len(dislikes)):
+            if dislikes[i]['user'] == disliked['user'] and dislikes[i] != disliked:
+                dislikes[i] = disliked
+                with open('./data/dislikes.txt', 'w') as f: f.write(str(dislikes))
+                break
+        else:
+            dislikes.append(disliked)    
+            with open('./data/dislikes.txt', 'w') as f: f.write(str(dislikes))
+
     with open('./data/videos.txt', 'w') as f: f.write(str(videos))
 
 def criarPlaylist(username):
@@ -258,18 +321,9 @@ def playlists(username):
     print('\n\033[1;97m####################################################### MINHAS PLAYLISTS ######################################################\033[0m')
     print()
     playlists = getUserPlaylists(username)
-    playlist_ids = []
-
-    if len(playlists) == 0: print('Nada a ver aqui por enquanto...')
-    else:
-        print(f'\033[1;94m| {'ID':^10} | {'NOME':^100} |\033[0m')
-        for i in range(117): print('\033[1;94m+\033[0m', end='')
-        print()
-        for i in range(len(playlists)):
-            playlist_ids.append(playlists[i]['id'])
-            print(f'\033[1;94m|\033[0m {i + 1:^10} \033[1;94m|\033[0m {playlists[i]['nome']:^100} \033[1;94m|\033[0m')
+    playlist_ids = printTables('playlists', playlists)
         
-        print('\nPara selecionar uma playlist, envie o número de ID dela')
+    if len(playlists) != 0: print('\nPara selecionar uma playlist, envie o número de ID dela')
     
     opcoes = printOpts('playlists', playlist_ids)
 
@@ -287,7 +341,7 @@ def perfil(user):
 
     print('\n\033[1;97m########################################################## MEUS ENVIOS #########################################################\033[0m')
     print()
-    videoIds = printVideosTable('recentes', user_videos)
+    videoIds = printTables('videos', user_videos, 'recentes')
     if videoIds != 0: print('\nPara selecionar um vídeo, digite e envie o número de ID do vídeo desejado')
 
     print(f'\n\033[1;94mNome de usuário:\033[0m {user['nome']}    \033[1;94mE-mail:\033[0m {user['email']}    \033[1;94mPerfil criado em:\033[0m {user['criacao']}')
