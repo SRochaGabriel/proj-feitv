@@ -2,6 +2,7 @@ import ast
 import datetime
 import os
 import textwrap
+import getpass
 
 def clear(): os.system('clear' if os.name == 'posix' else 'clear')
 
@@ -54,7 +55,14 @@ def printTables(table_type, table_data, table_order = 'recentes'):
         if table_order == 'recentes':
             table_data.reverse()
             table_data = table_data[:10]
-        
+        elif table_order == 'likes':
+            for i in range(len(table_data)):
+                for j in range(i + 1, len(table_data)):
+                    if table_data[i]['likes'] < table_data[j]['likes']:
+                        substituto = table_data[i]
+                        table_data[i] = table_data[j]
+                        table_data[j] = substituto
+
         tamanhos_coluna = [5, 35, 10, 35, 15, 10, 10]
         length_table = 8
     elif table_type == 'playlists':
@@ -99,6 +107,31 @@ def getVideos():
         try: return ast.literal_eval(f.read())
         except: return []
 
+def buscar():
+    clear()
+    printLogo()
+    search = input('\033[1;94mBusca (para cancelar, envie 0):\033[0m ').lower()
+    if search == '0': return 'I'
+
+    search = search.split()
+    videos = getVideos()
+    search_results = []
+
+    for search_item in search:
+        for video in videos:
+            if search_item in video['titulo'].lower() or search_item in video['uploader']:
+                search_results.append(video)
+    
+    video_ids = printTables('videos', search_results, 'likes')
+
+    opcoes = printOpts('gerais', video_ids)
+    opt = input().upper()
+    while opt not in opcoes:
+        print('\033[1;91mOpção inválida, escolha entre as opções disponíveis de acordo com a ação desejada\033[0m')
+        opt = input().upper()
+        
+    return opt
+
 def getAllFavoritesOrDislikes(file):
     with open(f'./data/{file}.txt', 'r') as f:
         try: return ast.literal_eval(f.read())
@@ -109,7 +142,11 @@ def getUserFavoritesOrDisliked(username, file):
         try: 
             items = ast.literal_eval(f.read())
             for item in items:
-                if item['user'] == username: return item
+                if item['user'] == username: 
+                    return item
+                    break
+            else:
+                raise Exception
         except:
             if file == 'favs':
                 return {"user": username, "curtidos": []}
@@ -232,17 +269,6 @@ def curtir_descurtir(username, video_id, funcao):
             fav['curtidos'].remove(video_id)
         else:
             fav['curtidos'].append(video_id)
-
-        # try:
-        #     i = fav['curtidos'].index(video_id)
-        #     operacao = 'remove_like'
-        #     fav['curtidos'].pop(i)
-        # except: fav['curtidos'].append(video_id)
-        
-        # for video in videos:
-        #     if video['id'] == video_id:
-        #         if operacao == 'add_like': video['likes'] += 1
-        #         else: video['likes'] -= 1
     else:
         operacao = 'add_dislike'
 
@@ -251,11 +277,6 @@ def curtir_descurtir(username, video_id, funcao):
             disliked['descurtidos'].remove(video_id)
         else:
             disliked['descurtidos'].append(video_id)
-        # try:
-        #     i = disliked['descurtidos'].index(video_id)
-        #     operacao = 'remove_dislike'
-        #     disliked['descurtidos'].pop(i)
-        # except: disliked['descurtidos'].append(video_id)
         
     for video in videos:
         if video['id'] == video_id:
@@ -355,33 +376,45 @@ def perfil(user):
         
     return opt
 
-def deletarConta(user):
+def deletarConta(curr_user):
     users = getUsers()
     videos = getVideos()
-    index = 0
+    videos_to_del = []
+    favs = getAllFavoritesOrDislikes('favs')
+    dislikes = getAllFavoritesOrDislikes('dislikes')
+    playlists = getAllPlaylists()
+    playlists_to_del = []
     senha = ''
 
     while senha == '':
-        senha = input('\033[1;94mInforme a senha para confirmar: \033[0m')
+        senha = getpass.getpass('\033[1;94mInforme a senha para confirmar: \033[0m')
     
-        if senha != user['senha']:
+        if senha != curr_user['senha']:
             print('\033[1;91mSenha incorreta. Tente novamente ou envie 0 para cancelar o processo\033[0m')
             senha = ''
     if senha == '0': return 0
 
-    for i in range(len(users)):
-        if user['nome'] == users[i]['nome']: index = i
-    users.pop(index)
+    users.remove(curr_user)
 
-    for i in range(len(videos)):
-        if user['nome'] == videos[i]['uploader']: index = i
-    videos.pop(index)
+    for video in videos:
+        if video['uploader'] == curr_user['nome']: videos_to_del.append(video)
+    for video in videos_to_del: videos.remove(video)
 
-    with open('./data/users.txt', 'w') as f:
-        f.write(str(users))
+    for fav in favs:
+        if fav['user'] == curr_user['nome']: favs.remove(fav)
 
-    with open('./data/videos.txt', 'w') as f:
-        f.write(str(videos))
+    for disliked in dislikes:
+        if disliked['user'] == curr_user['nome']: dislikes.remove(disliked)
+
+    for playlist in playlists:
+        if playlist['user'] == curr_user['nome']: playlists_to_del.append(playlist)
+    for playlist in playlists_to_del: playlists.remove(playlist)
+
+    with open('./data/users.txt', 'w') as f: f.write(str(users))
+    with open('./data/videos.txt', 'w') as f: f.write(str(videos))
+    with open('./data/favs.txt', 'w') as f: f.write(str(favs))
+    with open('./data/dislikes.txt', 'w') as f: f.write(str(dislikes))
+    with open('./data/playlists.txt', 'w') as f: f.write(str(playlists))
 
     return 1
 
@@ -408,7 +441,7 @@ def editarConta(curr_user):
     if email == '0': return curr_user
 
     while senha == '':
-        senha = input('\033[1;94mInforme a senha para confirmar: \033[0m')
+        senha = getpass.getpass('\033[1;94mInforme a senha para confirmar: \033[0m')
     
         if senha != curr_user['senha']:
             print('\033[1;91mSenha incorreta. Tente novamente ou envie 0 para cancelar o processo\033[0m')
@@ -458,7 +491,7 @@ def cadastro():
     if email == '0': return {}, False
 
     while senha == '':
-        senha = input('Crie uma senha: ')
+        senha = getpass.getpass('Crie uma senha: ')
     if senha == '0': return {}, False
 
     new_user = {"nome": username, "email": email, "senha":senha, "criacao":datetime.date.today().strftime('%d/%m/%Y')}
@@ -480,7 +513,7 @@ def login(msg = 'Para voltar para a tela inicial, digite e envie 0.'):
     if email == '0': return {}, False
 
     while senha == '':
-        senha = input('Digite sua senha: ')
+        senha = getpass.getpass('Digite sua senha: ')
     if senha == '0': return {}, False
 
     users = getUsers()
