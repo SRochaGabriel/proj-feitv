@@ -43,14 +43,17 @@ def printOpts(opt_layout, videoIds = 0):
 
     return opcoes
 
-def printTables(table_type, table_data, table_order = 'recentes'):
+def printTables(table_type, table_data, table_order = 'none'):
     if len(table_data) == 0:
             print('Nada a ver aqui por enquanto...')
             return 0
 
+    max_data_size = 0
+
     if table_type == 'videos':
         headers = ['ID', 'TÍTULO', 'DURACAO', 'ENVIADO POR', 'DATA DE ENVIO', 'LIKES', 'DISLIKES']
         campos = ['id', 'titulo', 'duracao', 'uploader', 'data_envio', 'likes', 'dislikes']
+        max_data_size = 30
 
         if table_order == 'recentes':
             table_data.reverse()
@@ -70,6 +73,7 @@ def printTables(table_type, table_data, table_order = 'recentes'):
         campos = ['id', 'nome']
         tamanhos_coluna = [10, 100]
         length_table = 3
+        max_data_size = 80
 
     for tamanho in tamanhos_coluna: length_table += tamanho
 
@@ -84,8 +88,8 @@ def printTables(table_type, table_data, table_order = 'recentes'):
         
         print('\033[1;94m|\033[0m', end='')
         for i in range(len(campos)):
-            if len(str(table_data[linha][campos[i]])) > 30: 
-                table_data[linha][campos[i]] = table_data[linha][campos[i]][:27] + '...'
+            if len(str(table_data[linha][campos[i]])) > max_data_size: 
+                table_data[linha][campos[i]] = table_data[linha][campos[i]][:(max_data_size - 3)] + '...'
 
             print(f'{table_data[linha][campos[i]]:^{tamanhos_coluna[i]}}', end='\033[1;94m|\033[0m')
         print()
@@ -112,6 +116,7 @@ def buscar():
     printLogo()
     search = input('\033[1;94mBusca (para cancelar, envie 0):\033[0m ').lower()
     if search == '0': return 'I'
+    print()
 
     search = search.split()
     videos = getVideos()
@@ -119,7 +124,7 @@ def buscar():
 
     for search_item in search:
         for video in videos:
-            if search_item in video['titulo'].lower() or search_item in video['uploader']:
+            if search_item.lower() in video['titulo'].lower() or search_item in video['uploader']:
                 search_results.append(video)
     
     video_ids = printTables('videos', search_results, 'likes')
@@ -174,6 +179,11 @@ def uploadVideo(user):
     print('Vamos pedir as informações dos vídeos que você quer registrar na plataforma. Para cancelar, envie "SAIR"')
     titulo, descricao, horas, minutos, segundos = '', '', 0, 0, 0
     videos = getVideos()
+    id = len(videos) + 1
+
+    for vid in videos:
+        if str(id) == vid['id']:
+            id += 1
     
     while titulo == '':
         titulo = input('Insira o título do vídeo (obrigatório): ')
@@ -194,7 +204,7 @@ def uploadVideo(user):
     duracao = formataDuracao(horas, minutos, segundos)
 
     video = {
-        "id": str(len(videos) + 1),
+        "id": str(id),
         "titulo": titulo,
         "descricao": descricao,
         "duracao": duracao,
@@ -339,7 +349,7 @@ def criarPlaylist(username):
 def playlists(username):
     clear()
     printLogo()
-    print('\n\033[1;97m####################################################### MINHAS PLAYLISTS ######################################################\033[0m')
+    print('\n\033[1;97m################################################ MINHAS PLAYLISTS ###############################################\033[0m')
     print()
     playlists = getUserPlaylists(username)
     playlist_ids = printTables('playlists', playlists)
@@ -348,6 +358,28 @@ def playlists(username):
     
     opcoes = printOpts('playlists', playlist_ids)
 
+    opt = input().upper()
+    while opt not in opcoes:
+        print('\033[1;91mOpção inválida, escolha entre as opções disponíveis de acordo com a ação desejada\033[0m')
+        opt = input().upper()
+    return opt
+
+def favoritos(username):
+    clear()
+    printLogo()
+    print('\n\033[1;97m########################################################## VÍDEOS CURTIDOS #####################################################\033[0m')
+    print()
+
+    fav = getUserFavoritesOrDisliked(username, 'favs')
+    videos = getVideos()
+    videos_curtidos = []
+
+    for video in videos:
+        if video['id'] in fav['curtidos']: videos_curtidos.insert(0, video)
+
+    ids = printTables('videos', videos_curtidos)
+
+    opcoes = printOpts('gerais', ids)
     opt = input().upper()
     while opt not in opcoes:
         print('\033[1;91mOpção inválida, escolha entre as opções disponíveis de acordo com a ação desejada\033[0m')
@@ -377,15 +409,7 @@ def perfil(user):
     return opt
 
 def deletarConta(curr_user):
-    users = getUsers()
-    videos = getVideos()
-    videos_to_del = []
-    favs = getAllFavoritesOrDislikes('favs')
-    dislikes = getAllFavoritesOrDislikes('dislikes')
-    playlists = getAllPlaylists()
-    playlists_to_del = []
     senha = ''
-
     while senha == '':
         senha = getpass.getpass('\033[1;94mInforme a senha para confirmar: \033[0m')
     
@@ -393,10 +417,22 @@ def deletarConta(curr_user):
             print('\033[1;91mSenha incorreta. Tente novamente ou envie 0 para cancelar o processo\033[0m')
             senha = ''
     if senha == '0': return 0
+    
+    users = getUsers()
+    videos = getVideos()
+    videos_to_del = []
+    favs = getAllFavoritesOrDislikes('favs')
+    fav = getUserFavoritesOrDisliked(curr_user['nome'], 'favs')
+    dislikes = getAllFavoritesOrDislikes('dislikes')
+    disliked = getUserFavoritesOrDisliked(curr_user['nome'], 'dislikes')
+    playlists = getAllPlaylists()
+    playlists_to_del = []
 
     users.remove(curr_user)
 
     for video in videos:
+        if video['id'] in fav['curtidos']: video['likes'] -= 1
+        if video['id'] in disliked['descurtidos']: video['dislikes'] -= 1
         if video['uploader'] == curr_user['nome']: videos_to_del.append(video)
     for video in videos_to_del: videos.remove(video)
 
@@ -421,6 +457,8 @@ def deletarConta(curr_user):
 def editarConta(curr_user):
     print('\033[1;94mVamos pedir as informações que você deseja alterar.\nPara cancelar, digite e envie 0. Para manter uma informação, não envie nada.\033[0m')
     username, email, senha = '', '', ''
+
+    
     users = getUsers()
     videos = getVideos()
 
@@ -468,12 +506,12 @@ def editarConta(curr_user):
 def cadastro():
     clear()
     printLogo()
-    print('\n''Para voltar para a tela inicial, digite e envie 0.')
+    print('\n\033[1;94mPara voltar para a tela inicial, digite e envie 0.\033[0m')
     username, email, senha = '', '', ''
     users = getUsers()
 
     while username == '':
-        username = input('Crie seu nome de usuário: ')
+        username = input('\033[1;94mCrie seu nome de usuário:\033[0m ')
 
         for user in users:
             if user['nome'] == username:
@@ -482,7 +520,7 @@ def cadastro():
     if username == '0': return {}, False 
 
     while email == '':
-        email = input('Insira seu E-mail: ')
+        email = input('\033[1;94mInsira seu E-mail:\033[0m ')
 
         for user in users:
             if user['email'] == email:
@@ -491,7 +529,7 @@ def cadastro():
     if email == '0': return {}, False
 
     while senha == '':
-        senha = getpass.getpass('Crie uma senha: ')
+        senha = getpass.getpass('\033[1;94mCrie uma senha:\033[0m ')
     if senha == '0': return {}, False
 
     new_user = {"nome": username, "email": email, "senha":senha, "criacao":datetime.date.today().strftime('%d/%m/%Y')}
@@ -509,11 +547,11 @@ def login(msg = 'Para voltar para a tela inicial, digite e envie 0.'):
     email, senha = '', ''
 
     while email == '':
-        email = input('Digite seu e-mail: ')
+        email = input('\033[1;94mDigite seu e-mail:\033[0m ')
     if email == '0': return {}, False
 
     while senha == '':
-        senha = getpass.getpass('Digite sua senha: ')
+        senha = getpass.getpass('\033[1;94mDigite sua senha:\033[0m ')
     if senha == '0': return {}, False
 
     users = getUsers()

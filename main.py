@@ -1,4 +1,4 @@
-from utils import init, cadastro, login, uploadVideo, clear, perfil, deletarConta, editarConta, playlists, criarPlaylist, videoDetails, curtir_descurtir, buscar
+from utils import init, cadastro, login, uploadVideo, clear, perfil, deletarConta, editarConta, playlists, criarPlaylist, videoDetails, curtir_descurtir, buscar, favoritos
 import os
 
 if not os.path.exists('./data/users.txt'): open('./data/users.txt', 'a')
@@ -10,24 +10,33 @@ if not os.path.exists('./data/dislikes.txt'): open('./data/dislikes.txt', 'a')
 auth_status = False
 current_user = {}
 pagina = 'inicial'
+opt = 'I'
 
 while True:
-    if pagina == 'inicial': opt = init(auth_status)
-
+    if opt == 'I':
+        pagina = 'inicial'
+        opt = init(auth_status)
+    
     if auth_status == False:
-        if opt == 'C': current_user, auth_status = cadastro()
-        elif opt == 'L': current_user, auth_status = login()
+        if opt == 'C': 
+            current_user, auth_status = cadastro()
+            opt = 'I'
+        elif opt == 'L': 
+            current_user, auth_status = login()
+            opt = 'I'
         elif opt == 'S':
             clear()
             break
-    else:
+    else:        
         if pagina == 'inicial':
-            if opt == 'E': uploadVideo(current_user['nome'])
+            if opt == 'E': 
+                uploadVideo(current_user['nome'])
+                opt = 'I'
         if pagina == 'perfil':
             if opt == 'D': 
                 operacao = deletarConta(current_user)
                 if operacao == 1:
-                    pagina = 'inicial'
+                    opt = 'I'
                     auth_status = False
                     current_user = {}
             if opt == 'E':
@@ -41,25 +50,24 @@ while True:
             if opt == 'C': 
                 curtir_descurtir(current_user['nome'], video_id, 'curtir')
                 opt = video_id
-                pagina = 'inicial'
             if opt == 'D':
                 curtir_descurtir(current_user['nome'], video_id, 'descurtir')
                 opt = video_id
-                pagina = 'inicial'
+
         if opt.isdigit():
             video_id = opt
             opt = videoDetails(video_id)
             pagina = 'video_page'
-            
-        if opt == 'Q': buscar()
+        if opt == 'Q': 
+            opt = buscar()
         if opt == 'U': 
             pagina = 'perfil'
             opt = perfil(current_user)
         if opt == 'P': 
             pagina = 'playlists'
             opt = playlists(current_user['nome'])
-        if opt == 'I': pagina = 'inicial'
         if opt == 'S': 
-            pagina = 'inicial'
+            opt = 'I'
             auth_status = False
-
+        if opt == 'F':
+            opt = favoritos(current_user['nome'])
