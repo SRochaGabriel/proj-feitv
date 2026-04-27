@@ -1,4 +1,4 @@
-from utils import init, cadastro, login, uploadVideo, clear, perfil, deletarConta, editarConta, playlists, criarPlaylist, videoDetails, curtir_descurtir, buscar, favoritos
+from utils import init, cadastro, login, uploadVideo, clear, perfil, deletarConta, editarConta, playlists, criarPlaylist, videoDetails, curtir_descurtir, buscar, favoritos, deletarVideo, editarVideo, addToPlaylist, playlistDetails, deletarPlaylist, editarPlaylist, removeVideo
 import os
 
 if not os.path.exists('./data/users.txt'): open('./data/users.txt', 'a')
@@ -46,6 +46,16 @@ while True:
             if opt == 'C':
                 opt = 'P'
                 criarPlaylist(current_user['nome'])
+            if opt.isdigit():
+                playlist_id = opt
+                opt = playlistDetails(playlist_id)
+                pagina = 'playlist_page'
+        if pagina == 'playlist_page':
+            if opt == 'D': 
+                opt = deletarPlaylist(playlist_id)
+            if opt == 'E':
+                pagina = 'playlists'
+                opt = editarPlaylist(playlist_id)
         if pagina == 'video_page':
             if opt == 'C': 
                 curtir_descurtir(current_user['nome'], video_id, 'curtir')
@@ -53,10 +63,16 @@ while True:
             if opt == 'D':
                 curtir_descurtir(current_user['nome'], video_id, 'descurtir')
                 opt = video_id
+            if opt == 'X':
+                opt = deletarVideo(video_id, current_user['senha'])
+            if opt == 'E':
+                opt = editarVideo(video_id, current_user['senha'])
+            if opt == 'A':
+                opt = addToPlaylist(video_id, current_user['nome'])
 
-        if opt.isdigit():
+        if pagina != 'playlists' and opt.isdigit():
             video_id = opt
-            opt = videoDetails(video_id)
+            opt = videoDetails(video_id, current_user['nome'])
             pagina = 'video_page'
         if opt == 'Q': 
             opt = buscar()
