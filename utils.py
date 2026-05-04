@@ -19,15 +19,22 @@ def formataDuracao(horas, minutos, segundos):
     if horas == '0': return f'{minutos}:{segundos}'
     else: return f'{horas}:{minutos}:{segundos}'
 
-def printOpts(opt_layout, videoIds = 0):
+def printOpts(opt_layout, videoIds = 0, user_func = 'usuario'):
     opcoes = []
 
     if opt_layout == 'gerais':
-        print('\nI - Página inicial    F - Favoritos    P - Minhas playlists    Q - Buscar    E - Enviar vídeo    U - Meu perfil    S - Sair da conta')
-        opcoes = ['I', 'F', 'P', 'Q', 'E', 'U', 'S']
-    elif opt_layout == 'perfil':
+        if user_func == 'admin':
+            print('\nI - Página inicial    F - Favoritos    P - Minhas playlists    Q - Buscar    E - Enviar vídeo    U - Meu perfil    T - Listagem de usuários    S - Sair da conta')
+            opcoes = ['I', 'F', 'P', 'Q', 'E', 'U', 'T', 'S']
+        else:
+            print('\nI - Página inicial    F - Favoritos    P - Minhas playlists    Q - Buscar    E - Enviar vídeo    U - Meu perfil    S - Sair da conta')
+            opcoes = ['I', 'F', 'P', 'Q', 'E', 'U', 'S']
+    elif opt_layout == 'meu_perfil':
         print('\nI - Página inicial    F - Favoritos    P - Minhas playlists    Q - Buscar    E - Editar informações    D - Deletar conta    S - Sair da conta')
         opcoes = ['I', 'F', 'P', 'Q', 'E', 'D', 'S']
+    elif opt_layout == 'perfil':
+        print('\nI - Página inicial    F - Favoritos    P - Minhas playlists    Q - Buscar    S - Sair da conta')
+        opcoes = ['I', 'F', 'P', 'Q', 'S']
     elif opt_layout == 'playlists':
         print('\nI - Página inicial    F - Favoritos    Q - Buscar    C - Criar playlist    U - Meu perfil    S - Sair da conta')
         opcoes = ['I', 'F', 'Q', 'C', 'U', 'S']
@@ -35,11 +42,17 @@ def printOpts(opt_layout, videoIds = 0):
         print('\nI - Página inicial    Q - Buscar    P - Minhas playlists    E - Editar playlist    D - Deletar playlist    X - Remover vídeo da playlist    S - Sair da conta')
         opcoes = ['I', 'Q', 'P', 'E', 'D', 'X', 'S']
     elif opt_layout == 'video_page':
-        print('\nI - Página inicial    P - Minhas playlists    C - Curtir    D - Descurtir    A - Adicionar à playlist    S - Sair da conta')
-        opcoes = ['I', 'P', 'C', 'D', 'A', 'S']
-    elif opt_layout == 'user_video_options':
-        print('\nI - Página inicial    C - Curtir    D - Descurtir    E - Editar informações    X - Excluir vídeo    A - Adicionar à playlist    S - Sair da conta')
-        opcoes = ['I', 'C', 'D', 'E', 'X', 'A', 'S']
+        print('\nI - Página inicial    P - Minhas playlists    C - Curtir    D - Descurtir    A - Adicionar à playlist    V - Ver perfil de usuário    S - Sair da conta')
+        opcoes = ['I', 'P', 'C', 'D', 'A', 'V', 'S']
+    elif opt_layout == 'owner_video_options':
+        print('\nI - Página inicial    C - Curtir    D - Descurtir    E - Editar informações    X - Excluir vídeo    A - Adicionar à playlist    V - Ver perfil de usuário    S - Sair da conta')
+        opcoes = ['I', 'C', 'D', 'E', 'X', 'A', 'V', 'S']
+    elif opt_layout == 'admin_video_options':
+        print('\nI - Página inicial    C - Curtir    D - Descurtir    X - Excluir vídeo    A - Adicionar à playlist    V - Ver perfil de usuário    S - Sair da conta')
+        opcoes = ['I', 'C', 'D', 'X', 'A', 'V', 'S']
+    elif opt_layout == 'all_users' and user_func == 'admin':
+        print('\nI - Página inicial    Q - Buscar    V - Ver perfil de usuário     X - Remover usuário    U - Meu perfil    S - Sair da conta')
+        opcoes = ['I', 'Q', 'V', 'X', 'E', 'U', 'S']
     else:
         print('C - Cadastrar    L - Efetuar login    S - Sair do FeiTV')
         opcoes = ['C', 'L', 'S']
@@ -78,9 +91,21 @@ def printTables(table_type, table_data, table_order = 'none'):
     elif table_type == 'playlists':
         headers = ['ID', 'NOME']
         campos = ['id', 'nome']
-        tamanhos_coluna = [10, 100]
+        tamanhos_coluna = [10, 110]
         length_table = 3
-        max_data_size = 80
+        max_data_size = 95
+    elif table_type == 'users':
+        headers = ['NOME', 'EMAIL', 'NÍVEL', 'DATA DE CRIAÇÃO']
+        campos = ['nome', 'email', 'funcao', 'criacao']
+        tamanhos_coluna = [45,  45, 15, 25]
+        length_table = 5
+        max_data_size = 40
+        for i in range(len(table_data)):
+            for j in range(i + 1, len(table_data)):
+                if table_data[i]['nome'] > table_data[j]['nome']:
+                    substituto = table_data[i]
+                    table_data[i] = table_data[j]
+                    table_data[j] = substituto
 
     for tamanho in tamanhos_coluna: length_table += tamanho
 
@@ -104,6 +129,7 @@ def printTables(table_type, table_data, table_order = 'none'):
     ids = []
     for item in table_data:
         if table_type == 'videos' or table_type == 'playlists': ids.append(item['id'])
+        elif table_type == 'users': ids.append(item['nome'])
 
     return ids
 
@@ -182,8 +208,8 @@ def getUserPlaylists(username):
         except: return []
 
 def uploadVideo(user):
-    print('Vamos pedir as informações dos vídeos que você quer registrar na plataforma. Para cancelar, envie "SAIR"')
-    titulo = ''
+    print('\033[1;94mVamos pedir as informações dos vídeos que você quer registrar na plataforma. Para cancelar, envie "SAIR"\033[0m')
+    titulo, horas, minutos, segundos = '', '', '', ''
     videos = getVideos()
     id = len(videos) + 1
 
@@ -192,20 +218,32 @@ def uploadVideo(user):
             id += 1
     
     while titulo == '':
-        titulo = input('Insira o título do vídeo (obrigatório): ')
+        titulo = input('\033[1;94mInsira o título do vídeo (obrigatório):\033[0m ')
     if titulo == 'SAIR': return 
 
-    descricao = input('Insira a descrição do vídeo (opcional): ')
+    descricao = input('\033[1;94mInsira a descrição do vídeo (opcional):\033[0m ')
     if descricao == 'SAIR': return 
 
-    horas = input('Quantas horas o vídeo possui? ')
-    if horas == 'SAIR': return 
+    while horas == '':
+        horas = input('\033[1;94mQuantas horas o vídeo possui?\033[0m ')
+        if horas == 'SAIR': return
+        elif not (horas.isdigit()):
+            print('\033[1;91mPara campos de tempo do vídeo, envie valores numéricos ou digite SAIR para cancelar o upload do vídeo.\033[0m')
+            horas = ''
 
-    minutos = input('Quantos minutos o vídeo possui? ')
-    if minutos == 'SAIR': return 
-
-    segundos = input('Quantos segundos o vídeo possui? ')
-    if segundos == 'SAIR': return 
+    while minutos == '':
+        minutos = input('\033[1;94mQuantos minutos o vídeo possui?\033[0m ')
+        if minutos == 'SAIR': return
+        elif not (minutos.isdigit()):
+            print('\033[1;91mPara campos de tempo do vídeo, envie valores numéricos ou digite SAIR para cancelar o upload do vídeo.\033[0m')
+            minutos = ''
+    
+    while segundos == '':
+        segundos = input('\033[1;94mQuantos segundos o vídeo possui?\033[0m ')
+        if segundos == 'SAIR': return
+        elif not (segundos.isdigit()):
+            print('\033[1;91mPara campos de tempo do vídeo, envie valores numéricos ou digite SAIR para cancelar o upload do vídeo.\033[0m')
+            segundos = ''
 
     duracao = formataDuracao(horas, minutos, segundos)
 
@@ -225,7 +263,63 @@ def uploadVideo(user):
     with open('./data/videos.txt', 'w') as f:
         f.write(str(videos))
 
-def init(auth_status):
+def usersPage():
+    clear()
+    printLogo()
+    print()
+    userIds = printTables('users', getUsers())
+    opcoes = printOpts('all_users', userIds, 'admin')
+    return inputOpts(opcoes)
+
+def removeUser():
+    username = ''
+    users = getUsers()
+    usernames = []
+    for user in users:
+        usernames.append(user['nome'])
+
+    while username == '':
+        print(usernames)
+        username = input('\033[1;94mInsira o nome do usuário a ser removido da plataforma (para cancelar, envie 0): \033[0m')
+        if username == '0': return 'T'
+        elif username not in usernames:
+            print('\033[1;91mSelecione um nome de usuário válido.\033[0m')
+            username = ''
+
+    opcao = ''
+    while opcao == '':
+        opcao = input('\033[1;94mTem certeza que deseja remover o usuário e todos os seus registros? (S/N): \033[0m').upper()
+        if opcao not in ['S', 'N']:
+            print('\033[1;91mSelecione uma opção válida.\033[0m')
+            opcao = ''
+    if opcao == 'N': return 'T'
+
+    for i in range(len(users)):
+        if users[i]['nome'] == username:
+            users.pop(i)
+            break
+    
+    removeAllUserData(username)
+    with open('./data/users.txt', 'w') as f: f.write(str(users))
+    return 'T'
+
+def verPerfil(curr_user, username = ''):
+    if username == '':
+        users = getUsers()
+        usernames = []
+        for user in users:
+            usernames.append(user['nome'])
+
+        while username == '':
+            username = input('\033[1;94mInsira o nome do usuário para ver o perfil (para cancelar, envie 0): \033[0m')
+            if username == '0': return 'T'
+            elif username not in usernames:
+                print('\033[1;91mSelecione um nome de usuário válido.\033[0m')
+                username = ''
+    
+    return perfil(curr_user, username)
+
+def init(auth_status, user_func = ''):
     clear()
     printLogo()
 
@@ -235,10 +329,17 @@ def init(auth_status):
         print('\nBem-vindo ao sistema da \033[1;94mFei\033[0mTV! Por favor, selecione uma das opções abaixo')
         opcoes = printOpts('opcoes_sem_login')
     else:
-        print('\n\033[1;97m##################################################### VÍDEOS MAIS RECENTES #####################################################\033[0m')
-        print()
-        videoIds = printTables('videos', getVideos(), 'recentes')
-        opcoes = printOpts('gerais', videoIds)
+        if user_func == 'usuario':
+            print('\n\033[1;97m##################################################### VÍDEOS MAIS RECENTES #####################################################\033[0m')
+            print()
+            videoIds = printTables('videos', getVideos(), 'recentes')
+            opcoes = printOpts('gerais', videoIds)
+        else:
+            print('\n\033[1;97m##################################################### ESTATÍSTICAS DO SISTEMA #####################################################\033[0m')
+            print('\n\033[1;94m##################################################### VÍDEOS MAIS CURTIDOS #####################################################\033[0m')
+            videoIds = printTables('videos', getVideos()[:5], 'likes')
+            print(f'\033[1;94mTotal de usuários:\033[0m {len(getUsers())}\n\033[1;94mTotal de vídeos:\033[0m {len(getVideos())}')
+            opcoes = printOpts('gerais', videoIds, 'admin')
 
     opt = input().upper()
     while opt not in opcoes:
@@ -247,14 +348,14 @@ def init(auth_status):
         
     return opt
 
-def videoDetails(video_id, username):
+def videoDetails(video_id, user):
     clear()
     printLogo()
     videos = getVideos()
     for i in range(len(videos)):
         if videos[i]['id'] == video_id: video = videos[i]
 
-    print('\n\033[1;97m########################################################## INFORMAÇÕES DE VÍDEO #########################################################\033[0m')
+    print('\n\033[1;97m########################################################## INFORMAÇÕES DO VÍDEO #########################################################\033[0m')
 
     print(f'\033[1;94mTítulo:\033[0m {video['titulo']}')
     print(f'\033[1;94mDescrição:\033[0m {textwrap.fill(video['descricao'], width=80)}')
@@ -262,8 +363,10 @@ def videoDetails(video_id, username):
     print(f'\033[1;94mDuração:\033[0m {video['duracao']}    \033[1;94mData de envio:\033[0m {video['data_envio']}')
     print(f'\033[1;94mLikes:\033[0m {video['likes']}    \033[1;94mDislikes:\033[0m {video['dislikes']}')
 
-    if video['uploader'] == username:
-        opcoes = printOpts('user_video_options')
+    if video['uploader'] == user['nome']:
+        opcoes = printOpts('owner_video_options')
+    elif user['funcao'] == 'admin':
+        opcoes = printOpts('admin_video_options')
     else:
         opcoes = printOpts('video_page')
     opt = input().upper()
@@ -271,14 +374,15 @@ def videoDetails(video_id, username):
         print('\033[1;91mOpção inválida, escolha entre as opções disponíveis de acordo com a ação desejada\033[0m')
         opt = input().upper()
 
-    return opt
+    if opt == 'V': return opt, video['uploader']
+    else: return opt, None
 
-def deletarVideo(video_id, user_senha):
+def deletarVideo(video_id, user):
     senha = ''
     while senha == '':
         senha = getpass.getpass('\033[1;94mInsira sua senha para confirmar ou envie 0 para cancelar a exclusão:\033[0m ')
         if senha == '0': return video_id
-        elif senha != user_senha:
+        elif senha != user['senha']:
             print('\033[1;91mSenha incorreta. Tente novamente ou envie 0 para cancelar.')
             senha = ''
 
@@ -289,7 +393,8 @@ def deletarVideo(video_id, user_senha):
             break
 
     with open('./data/videos.txt', 'w') as f: f.write(str(videos))
-    return 'U'
+    if user['funcao'] == 'usuario': return 'U'
+    else: return 'I'
 
 def editarVideo(video_id, user_senha):
     print('\nVamos pedir que insira as informações do vídeo a serem alteradas. Para manter uma informação como está, pressione Enter sem digitar nada. Para cancelar, envie \'SAIR\' em qualquer campo.')
@@ -491,7 +596,7 @@ def deletarPlaylist(playlist_id):
                 print('\033[1;91mOpção inválida.\033[0m')
                 opcao = ''
     if opcao == 'N':
-        return 'P'
+        return playlist_id
 
     playlists = getAllPlaylists()
     for i in range(len(playlists)):
@@ -520,8 +625,24 @@ def editarPlaylist(playlist_id):
     with open('./data/playlists.txt', 'w') as f: f.write(str(playlists))
     return playlist_id
 
-def removeVideo():
-    print('a')
+def removeVideo(playlist_id):
+    playlist = {}
+    playlists = getAllPlaylists()
+    for pl in playlists:
+        if pl['id'] == playlist_id: playlist = pl
+
+    video_id = ''
+    while video_id == '':
+        video_id = input('\033[1;94mDigite o ID do vídeo que deseja remover da playlist\033[0m')
+        if video_id not in playlist['videos']:
+            print('\033[1;91mInsira um ID válido entre os vídeos da playlist.\033[0m')
+            video_id = ''
+    playlist['videos'].remove(video_id)
+    for i in range(len(playlists)):
+        if playlists[i]['id'] == playlist_id: playlists[i] = playlist
+
+    with open('./data/playlists.txt', 'w') as f: f.write(str(playlists))
+    return playlist_id
 
 def favoritos(username):
     clear()
@@ -541,67 +662,83 @@ def favoritos(username):
     opcoes = printOpts('gerais', ids)
     return inputOpts(opcoes)
 
-def perfil(user):
+def perfil(user, selected_username):
     clear()
     printLogo()
     videos = getVideos()
-    user_videos = list(filter(lambda video: video['uploader'] == user['nome'], videos))
+    user_videos = []
 
-    print('\n\033[1;97m########################################################## MEUS ENVIOS #########################################################\033[0m')
+    if user['nome'] == selected_username:
+        titulo_pag = 'MEUS ENVIOS'
+        opt_layout = 'meu_perfil'
+    else:
+        titulo_pag = 'ENVIADOS'
+        opt_layout = 'perfil'
+        users = getUsers()
+        for u in users:
+            if selected_username == u['nome']:
+                user = u
+                break
+    
+    for video in videos:
+        if video['uploader'] == user['nome']: user_videos.append(video)
+    
+    print(f'\n\033[1;97m########################################################## {titulo_pag} #########################################################\033[0m')
     print()
     videoIds = printTables('videos', user_videos, 'recentes')
     if videoIds != 0: print('\nPara selecionar um vídeo, digite e envie o número de ID do vídeo desejado')
 
     print(f'\n\033[1;94mNome de usuário:\033[0m {user['nome']}    \033[1;94mE-mail:\033[0m {user['email']}    \033[1;94mPerfil criado em:\033[0m {user['criacao']}')
 
-    opcoes = printOpts('perfil', videoIds)
+    opcoes = printOpts(opt_layout, videoIds)
     return inputOpts(opcoes)
 
 def deletarConta(curr_user):
     senha = ''
     while senha == '':
-        senha = getpass.getpass('\033[1;94mInforme a senha para confirmar: \033[0m')
+        senha = getpass.getpass('\033[1;94mInforme a senha para confirmar (ou envie 0 para cancelar): \033[0m')
     
-        if senha != curr_user['senha']:
+        if senha == '0': return 'U'
+        elif senha != curr_user['senha']:
             print('\033[1;91mSenha incorreta. Tente novamente ou envie 0 para cancelar o processo\033[0m')
             senha = ''
-    if senha == '0': return 0
     
     users = getUsers()
+    removeAllUserData(curr_user['nome'])
+    users.remove(curr_user)
+    with open('./data/users.txt', 'w') as f: f.write(str(users))
+
+    return 1
+
+def removeAllUserData(username):
     videos = getVideos()
     videos_to_del = []
     favs = getAllFavoritesOrDislikes('favs')
-    fav = getUserFavoritesOrDisliked(curr_user['nome'], 'favs')
+    fav = getUserFavoritesOrDisliked(username, 'favs')
     dislikes = getAllFavoritesOrDislikes('dislikes')
-    disliked = getUserFavoritesOrDisliked(curr_user['nome'], 'dislikes')
+    disliked = getUserFavoritesOrDisliked(username, 'dislikes')
     playlists = getAllPlaylists()
     playlists_to_del = []
-
-    users.remove(curr_user)
 
     for video in videos:
         if video['id'] in fav['curtidos']: video['likes'] -= 1
         if video['id'] in disliked['descurtidos']: video['dislikes'] -= 1
-        if video['uploader'] == curr_user['nome']: videos_to_del.append(video)
+        if video['uploader'] == username: videos_to_del.append(video)
     for video in videos_to_del: videos.remove(video)
 
     for fav in favs:
-        if fav['user'] == curr_user['nome']: favs.remove(fav)
+        if fav['user'] == username: favs.remove(fav)
 
     for disliked in dislikes:
-        if disliked['user'] == curr_user['nome']: dislikes.remove(disliked)
+        if disliked['user'] == username: dislikes.remove(disliked)
 
     for playlist in playlists:
-        if playlist['user'] == curr_user['nome']: playlists_to_del.append(playlist)
+        if playlist['user'] == username: playlists_to_del.append(playlist)
     for playlist in playlists_to_del: playlists.remove(playlist)
-
-    with open('./data/users.txt', 'w') as f: f.write(str(users))
     with open('./data/videos.txt', 'w') as f: f.write(str(videos))
     with open('./data/favs.txt', 'w') as f: f.write(str(favs))
     with open('./data/dislikes.txt', 'w') as f: f.write(str(dislikes))
     with open('./data/playlists.txt', 'w') as f: f.write(str(playlists))
-
-    return 1
 
 def editarConta(curr_user):
     print('\033[1;94mVamos pedir as informações que você deseja alterar.\nPara cancelar, digite e envie 0. Para manter uma informação, não envie nada.\033[0m')
@@ -680,9 +817,12 @@ def cadastro():
 
     while senha == '':
         senha = getpass.getpass('\033[1;94mCrie uma senha:\033[0m ')
-    if senha == '0': return {}, False
+        if senha == '0': return {}, False
+        elif len(senha) < 6:
+            print('\033[1;91mSua senha deve ter no mínimo 6 caracteres.\033[0m')
+            senha = ''
 
-    new_user = {"nome": username, "email": email, "senha":senha, "criacao":datetime.date.today().strftime('%d/%m/%Y')}
+    new_user = {"nome": username, "email": email, "senha":senha, "funcao": "usuario", "criacao":datetime.date.today().strftime('%d/%m/%Y')}
     users.append(new_user)
     
     with open('./data/users.txt', 'w') as f:
