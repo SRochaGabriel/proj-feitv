@@ -75,16 +75,18 @@ def printTables(table_type, table_data, table_order = 'none'):
         campos = ['id', 'titulo', 'duracao', 'uploader', 'data_envio', 'likes', 'dislikes']
         max_data_size = 30
 
-        if table_order == 'recentes':
+        if table_order == 'recentes' or table_order == 'recentes_10':
             table_data.reverse()
-            table_data = table_data[:10]
-        elif table_order == 'likes':
+        elif table_order == 'likes' or table_order == 'top_likes':
             for i in range(len(table_data)):
                 for j in range(i + 1, len(table_data)):
                     if table_data[i]['likes'] < table_data[j]['likes']:
                         substituto = table_data[i]
                         table_data[i] = table_data[j]
                         table_data[j] = substituto
+
+        if table_order == 'top_likes': table_data = table_data[:5]
+        elif table_order == 'recentes_10': table_data = table_data[:10]
 
         tamanhos_coluna = [5, 35, 10, 35, 15, 10, 10]
         length_table = 8
@@ -95,11 +97,11 @@ def printTables(table_type, table_data, table_order = 'none'):
         length_table = 3
         max_data_size = 95
     elif table_type == 'users':
-        headers = ['NOME', 'EMAIL', 'NÍVEL', 'DATA DE CRIAÇÃO']
-        campos = ['nome', 'email', 'funcao', 'criacao']
-        tamanhos_coluna = [45,  45, 15, 25]
+        headers = ['ID', 'NOME', 'EMAIL', 'NÍVEL', 'DATA DE CRIAÇÃO']
+        campos = ['id', 'nome', 'email', 'funcao', 'criacao']
+        tamanhos_coluna = [5, 35,  35, 15, 25]
         length_table = 5
-        max_data_size = 40
+        max_data_size = 30
         for i in range(len(table_data)):
             for j in range(i + 1, len(table_data)):
                 if table_data[i]['nome'] > table_data[j]['nome']:
@@ -219,6 +221,9 @@ def uploadVideo(user):
     
     while titulo == '':
         titulo = input('\033[1;94mInsira o título do vídeo (obrigatório):\033[0m ')
+        if titulo == '0':
+            print('\033[1;91mEsse título de vídeo não é válido. Tente novamente.\033[0m')
+            titulo = ''
     if titulo == 'SAIR': return 
 
     descricao = input('\033[1;94mInsira a descrição do vídeo (opcional):\033[0m ')
@@ -228,21 +233,21 @@ def uploadVideo(user):
         horas = input('\033[1;94mQuantas horas o vídeo possui?\033[0m ')
         if horas == 'SAIR': return
         elif not (horas.isdigit()):
-            print('\033[1;91mPara campos de tempo do vídeo, envie valores numéricos ou digite SAIR para cancelar o upload do vídeo.\033[0m')
+            print('\033[1;91mPara campos de tempo do vídeo, envie valores numéricos válidos ou digite SAIR para cancelar o upload do vídeo.\033[0m')
             horas = ''
 
     while minutos == '':
         minutos = input('\033[1;94mQuantos minutos o vídeo possui?\033[0m ')
         if minutos == 'SAIR': return
-        elif not (minutos.isdigit()):
-            print('\033[1;91mPara campos de tempo do vídeo, envie valores numéricos ou digite SAIR para cancelar o upload do vídeo.\033[0m')
+        elif not (minutos.isdigit()) or int(minutos) >= 60:
+            print('\033[1;91mPara campos de tempo do vídeo, envie valores numéricos válidos ou digite SAIR para cancelar o upload do vídeo.\033[0m')
             minutos = ''
     
     while segundos == '':
         segundos = input('\033[1;94mQuantos segundos o vídeo possui?\033[0m ')
         if segundos == 'SAIR': return
-        elif not (segundos.isdigit()):
-            print('\033[1;91mPara campos de tempo do vídeo, envie valores numéricos ou digite SAIR para cancelar o upload do vídeo.\033[0m')
+        elif not (segundos.isdigit()) or int(segundos) >= 60:
+            print('\033[1;91mPara campos de tempo do vídeo, envie valores numéricos válidos ou digite SAIR para cancelar o upload do vídeo.\033[0m')
             segundos = ''
 
     duracao = formataDuracao(horas, minutos, segundos)
@@ -272,19 +277,18 @@ def usersPage():
     return inputOpts(opcoes)
 
 def removeUser():
-    username = ''
+    user_id = ''
     users = getUsers()
-    usernames = []
+    user_ids = []
     for user in users:
-        usernames.append(user['nome'])
+        user_ids.append(user['id'])
 
-    while username == '':
-        print(usernames)
-        username = input('\033[1;94mInsira o nome do usuário a ser removido da plataforma (para cancelar, envie 0): \033[0m')
-        if username == '0': return 'T'
-        elif username not in usernames:
+    while user_id == '':
+        user_id = input('\033[1;94mInsira o ID do usuário a ser removido da plataforma (para cancelar, envie 0): \033[0m')
+        if user_id == '0': return 'T'
+        elif user_id not in user_ids:
             print('\033[1;91mSelecione um nome de usuário válido.\033[0m')
-            username = ''
+            user_id = ''
 
     opcao = ''
     while opcao == '':
@@ -295,7 +299,8 @@ def removeUser():
     if opcao == 'N': return 'T'
 
     for i in range(len(users)):
-        if users[i]['nome'] == username:
+        if users[i]['id'] == user_id:
+            username = users[i]['nome']
             users.pop(i)
             break
     
@@ -303,19 +308,22 @@ def removeUser():
     with open('./data/users.txt', 'w') as f: f.write(str(users))
     return 'T'
 
-def verPerfil(curr_user, username = ''):
-    if username == '':
+def verPerfil(curr_user, user = ''):
+    if user == '':
         users = getUsers()
-        usernames = []
-        for user in users:
-            usernames.append(user['nome'])
+        user_ids = []
+        for u in users:
+            user_ids.append(u['id'])
 
-        while username == '':
-            username = input('\033[1;94mInsira o nome do usuário para ver o perfil (para cancelar, envie 0): \033[0m')
-            if username == '0': return 'T'
-            elif username not in usernames:
-                print('\033[1;91mSelecione um nome de usuário válido.\033[0m')
-                username = ''
+        while user == '':
+            user = input('\033[1;94mInsira o ID do usuário para ver o perfil (para cancelar, envie 0): \033[0m')
+            if user == '0': return 'T'
+            elif user not in user_ids:
+                print('\033[1;91mSelecione um ID de usuário válido.\033[0m')
+                user = ''
+        
+        for i in range(len(users)):
+            if users[i]['id'] == user: username = users[i]['nome']
     
     return perfil(curr_user, username)
 
@@ -332,12 +340,12 @@ def init(auth_status, user_func = ''):
         if user_func == 'usuario':
             print('\n\033[1;97m##################################################### VÍDEOS MAIS RECENTES #####################################################\033[0m')
             print()
-            videoIds = printTables('videos', getVideos(), 'recentes')
+            videoIds = printTables('videos', getVideos(), 'recentes_10')
             opcoes = printOpts('gerais', videoIds)
         else:
             print('\n\033[1;97m##################################################### ESTATÍSTICAS DO SISTEMA #####################################################\033[0m')
             print('\n\033[1;94m##################################################### VÍDEOS MAIS CURTIDOS #####################################################\033[0m')
-            videoIds = printTables('videos', getVideos()[:5], 'likes')
+            videoIds = printTables('videos', getVideos(), 'top_likes')
             print(f'\033[1;94mTotal de usuários:\033[0m {len(getUsers())}\n\033[1;94mTotal de vídeos:\033[0m {len(getVideos())}')
             opcoes = printOpts('gerais', videoIds, 'admin')
 
@@ -397,19 +405,47 @@ def deletarVideo(video_id, user):
     else: return 'I'
 
 def editarVideo(video_id, user_senha):
-    print('\nVamos pedir que insira as informações do vídeo a serem alteradas. Para manter uma informação como está, pressione Enter sem digitar nada. Para cancelar, envie \'SAIR\' em qualquer campo.')
+    print('\n\033[1;94mVamos pedir que insira as informações do vídeo a serem alteradas. Para manter uma informação como está, pressione Enter sem digitar nada. Para cancelar, envie \'SAIR\' em qualquer campo.\033[0m')
     
+    videos = getVideos()
+    video = {}
+    for vid in videos:
+        if vid['id'] == video_id: video = vid
+
+    og_duracao = video['duracao'].split(':')
+    try: og_horas, og_minutos, og_segundos = og_duracao[0], og_duracao[1], og_duracao[2]
+    except: og_horas, og_minutos, og_segundos = '00', og_duracao[1], og_duracao[2] 
+    horas, minutos, segundos = 'a', 'a', 'a'
+
     titulo = input('\033[1;94mTítulo:\033[0m ')
     if titulo == 'SAIR': return video_id
     desc = input('\033[1;94mDescrição:\033[0m ')
     if desc == 'SAIR': return video_id
-    horas = input('\033[1;94mHoras:\033[0m ')
-    if horas == 'SAIR': return video_id
-    minutos = input('\033[1;94mMinutos:\033[0m ')
-    if minutos == 'SAIR': return video_id
-    segundos = input('\033[1;94mSegundos:\033[0m ')
-    if segundos == 'SAIR': return video_id
+    
+    while horas == 'a':
+        horas = input('\033[1;94mHoras:\033[0m ')
+        if horas == 'SAIR': return video_id
+        elif not horas.isdigit() and horas != '':
+            print('\033[1;91mEnvie um valor numérico válido ou deixe o campo vazio para manter o valor anterior.\033[0m')
+            horas = 'a'
 
+    while minutos == 'a':
+        minutos = input('\033[1;94mMinutos:\033[0m ')
+        if minutos == 'SAIR': return video_id
+        elif (not minutos.isdigit() and minutos != '') or (minutos.isdigit() and int(minutos) >= 60):
+            print('\033[1;91mEnvie um valor numérico válido ou deixe o campo vazio para manter o valor anterior.\033[0m')
+            minutos = 'a'
+
+    while segundos == 'a':
+        segundos = input('\033[1;94mSegundos:\033[0m ')
+        if segundos == 'SAIR': return video_id
+        elif (not segundos.isdigit() and segundos != '') or (segundos.isdigit() and int(segundos) >= 60):
+            print('\033[1;91mEnvie um valor numérico válido ou deixe o campo vazio para manter o valor anterior.\033[0m')
+            segundos = 'a'
+
+    if horas == '': horas = og_horas
+    if minutos == '': minutos = og_minutos
+    if segundos == '': segundos = og_segundos
     duracao = formataDuracao(horas, minutos, segundos)
 
     senha = ''
@@ -417,7 +453,7 @@ def editarVideo(video_id, user_senha):
         senha = getpass.getpass('\n\033[1;94mInsira sua senha para confirmar ou envie 0 para cancelar:\033[0m ')
         if senha == '0': return video_id
         elif senha != user_senha:
-            print('\033[1;91mSenha incorreta. Tente novamente ou envie 0 para cancelar.')
+            print('\033[1;91mSenha incorreta. Tente novamente ou envie 0 para cancelar.\033[0m')
             senha = ''
     
     videos = getVideos()
@@ -633,7 +669,7 @@ def removeVideo(playlist_id):
 
     video_id = ''
     while video_id == '':
-        video_id = input('\033[1;94mDigite o ID do vídeo que deseja remover da playlist\033[0m')
+        video_id = input('\033[1;94mDigite o ID do vídeo que deseja remover da playlist\033[0m ')
         if video_id not in playlist['videos']:
             print('\033[1;91mInsira um ID válido entre os vídeos da playlist.\033[0m')
             video_id = ''
@@ -688,7 +724,8 @@ def perfil(user, selected_username):
     videoIds = printTables('videos', user_videos, 'recentes')
     if videoIds != 0: print('\nPara selecionar um vídeo, digite e envie o número de ID do vídeo desejado')
 
-    print(f'\n\033[1;94mNome de usuário:\033[0m {user['nome']}    \033[1;94mE-mail:\033[0m {user['email']}    \033[1;94mPerfil criado em:\033[0m {user['criacao']}')
+    if opt_layout == 'meu_perfil': print(f'\n\033[1;94mNome de usuário:\033[0m {user['nome']}    \033[1;94mE-mail:\033[0m {user['email']}    \033[1;94mPerfil criado em:\033[0m {user['criacao']}')
+    else: print(f'\n\033[1;94mNome de usuário:\033[0m {user['nome']}    \033[1;94mPerfil criado em:\033[0m {user['criacao']}')
 
     opcoes = printOpts(opt_layout, videoIds)
     return inputOpts(opcoes)
@@ -766,10 +803,10 @@ def editarConta(curr_user):
     while senha == '':
         senha = getpass.getpass('\033[1;94mInforme a senha para confirmar: \033[0m')
     
-        if senha != curr_user['senha']:
+        if senha == '0': return curr_user
+        elif senha != curr_user['senha']:
             print('\033[1;91mSenha incorreta. Tente novamente ou envie 0 para cancelar o processo\033[0m')
             senha = ''
-    if senha == '0': return curr_user
 
     for i in range(len(users)):
         if curr_user['nome'] == users[i]['nome']:
@@ -780,8 +817,6 @@ def editarConta(curr_user):
     if username != '': 
         for i in range(len(videos)):
             if curr_user['nome'] == videos[i]['uploader']: videos[i]['uploader'] = username
-            break
-
         curr_user['nome'] = username
     if email != '': curr_user['email'] = email
     
@@ -796,6 +831,11 @@ def cadastro():
     print('\nPara voltar para a tela inicial, digite e envie 0.')
     username, email, senha = '', '', ''
     users = getUsers()
+    id = len(users) + 1
+
+    for user in users:
+        if str(id) == user['id']:
+            id += 1
 
     while username == '':
         username = input('\033[1;94mCrie seu nome de usuário:\033[0m ')
@@ -822,7 +862,7 @@ def cadastro():
             print('\033[1;91mSua senha deve ter no mínimo 6 caracteres.\033[0m')
             senha = ''
 
-    new_user = {"nome": username, "email": email, "senha":senha, "funcao": "usuario", "criacao":datetime.date.today().strftime('%d/%m/%Y')}
+    new_user = {"id": str(id), "nome": username, "email": email, "senha":senha, "funcao": "usuario", "criacao":datetime.date.today().strftime('%d/%m/%Y')}
     users.append(new_user)
     
     with open('./data/users.txt', 'w') as f:
