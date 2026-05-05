@@ -58,7 +58,7 @@ def buscar():
 
     for search_item in search:
         for video in videos:
-            if search_item.lower() in video['titulo'].lower() or search_item in video['uploader']:
+            if (search_item.lower() in video['titulo'].lower() or search_item in video['uploader'] or search_item in video['id']) and (video not in search_results):
                 search_results.append(video)
     
     video_ids = printTables('videos', search_results, 'likes')
