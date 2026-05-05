@@ -1,4 +1,4 @@
-from utils import init, cadastro, login, uploadVideo, clear, perfil, deletarConta, editarConta, playlists, criarPlaylist, videoDetails, curtir_descurtir, buscar, favoritos, deletarVideo, editarVideo, addToPlaylist, playlistDetails, deletarPlaylist, editarPlaylist, removeVideo, usersPage, removeUser, verPerfil
+from utils import *
 import os
 
 if not os.path.exists('./data'): os.mkdir('./data')
