@@ -3,7 +3,6 @@ import datetime
 import getpass
 import os
 import textwrap
-import time
 
 def addToPlaylist(video_id, username):
     clear()
@@ -41,7 +40,7 @@ def addToPlaylist(video_id, username):
     for i in range(len(playlists)):
         if playlists[i]['id'] == selected_playlist: playlists[i]['videos'].append(video_id)
 
-    with open('./data/playlists.txt', 'w') as f: f.write(str(playlists))
+    with open('./data/playlists.txt', 'w', encoding='utf-8') as f: f.write(str(playlists))
     
     return video_id
 
@@ -111,12 +110,12 @@ def cadastro():
     new_user = {"id": str(id), "nome": username, "email": email, "senha":senha, "funcao": "usuario", "criacao":datetime.date.today().strftime('%d/%m/%Y')}
     users.append(new_user)
     
-    with open('./data/users.txt', 'w') as f:
+    with open('./data/users.txt', 'w', encoding='utf-8') as f:
         f.write(str(users))
     
     return new_user, True
 
-def clear(): os.system('clear' if os.name == 'posix' else 'clear')
+def clear(): os.system('clear' if os.name == 'posix' else 'cls')
 
 def curtir_descurtir(username, video_id, funcao):
     videos = getVideos()
@@ -162,24 +161,24 @@ def curtir_descurtir(username, video_id, funcao):
         for i in range(len(favs)):
             if favs[i]['user'] == fav['user'] and favs[i] != fav: 
                 favs[i] = fav
-                with open('./data/favs.txt', 'w') as f: f.write(str(favs))
+                with open('./data/favs.txt', 'w', encoding='utf-8') as f: f.write(str(favs))
                 break
         else:
             favs.append(fav)
-            with open('./data/favs.txt', 'w') as f: f.write(str(favs))
+            with open('./data/favs.txt', 'w', encoding='utf-8') as f: f.write(str(favs))
 
     if init_disliked != disliked['descurtidos']:
         dislikes = getAllFavoritesOrDislikes('dislikes')
         for i in range(len(dislikes)):
             if dislikes[i]['user'] == disliked['user'] and dislikes[i] != disliked:
                 dislikes[i] = disliked
-                with open('./data/dislikes.txt', 'w') as f: f.write(str(dislikes))
+                with open('./data/dislikes.txt', 'w', encoding='utf-8') as f: f.write(str(dislikes))
                 break
         else:
             dislikes.append(disliked)    
-            with open('./data/dislikes.txt', 'w') as f: f.write(str(dislikes))
+            with open('./data/dislikes.txt', 'w', encoding='utf-8') as f: f.write(str(dislikes))
 
-    with open('./data/videos.txt', 'w') as f: f.write(str(videos))
+    with open('./data/videos.txt', 'w', encoding='utf-8') as f: f.write(str(videos))
 
 def criarPlaylist(username):
     print('\033[1;94mPara cancelar o processo de criar uma nova playlist, digite e envie 0.\033[0m')
@@ -202,7 +201,7 @@ def criarPlaylist(username):
     playlist = {"id": str(id), "user": username, "nome": n_playlist, "videos": []}
 
     playlists.append(playlist)
-    with open('./data/playlists.txt', 'w') as f: f.write(str(playlists))
+    with open('./data/playlists.txt', 'w', encoding='utf-8') as f: f.write(str(playlists))
 
 def deletarConta(curr_user):
     senha = ''
@@ -217,7 +216,7 @@ def deletarConta(curr_user):
     users = getUsers()
     removeAllUserData(curr_user['nome'])
     users.remove(curr_user)
-    with open('./data/users.txt', 'w') as f: f.write(str(users))
+    with open('./data/users.txt', 'w', encoding='utf-8') as f: f.write(str(users))
 
     return 1
 
@@ -236,7 +235,7 @@ def deletarVideo(video_id, user):
             videos.pop(i)
             break
 
-    with open('./data/videos.txt', 'w') as f: f.write(str(videos))
+    with open('./data/videos.txt', 'w', encoding='utf-8') as f: f.write(str(videos))
     if user['funcao'] == 'usuario': return 'U'
     else: return 'I'
 
@@ -256,7 +255,7 @@ def deletarPlaylist(playlist_id):
             playlists.pop(i)
             break
 
-    with open('./data/playlists.txt', 'w') as f: f.write(str(playlists))
+    with open('./data/playlists.txt', 'w', encoding='utf-8') as f: f.write(str(playlists))
     return 'P'
 
 def editarConta(curr_user):
@@ -302,8 +301,8 @@ def editarConta(curr_user):
         curr_user['nome'] = username
     if email != '': curr_user['email'] = email
     
-    with open('./data/users.txt', 'w') as f: f.write(str(users))
-    with open("./data/videos.txt", 'w') as f: f.write(str(videos))
+    with open('./data/users.txt', 'w', encoding='utf-8') as f: f.write(str(users))
+    with open("./data/videos.txt", 'w', encoding='utf-8') as f: f.write(str(videos))
 
     return curr_user
 
@@ -366,7 +365,7 @@ def editarVideo(video_id, user_senha):
             if desc != '': videos[i]['descricao'] = desc
             if duracao != '00:00': videos[i]['duracao'] = duracao
     
-    with open('./data/videos.txt', 'w') as f: f.write(str(videos))
+    with open('./data/videos.txt', 'w', encoding='utf-8') as f: f.write(str(videos))
     
     return video_id
 
@@ -385,7 +384,7 @@ def editarPlaylist(playlist_id):
     for i in range(len(playlists)):
         if playlists[i]['id'] == playlist_id: playlists[i]['nome'] = playlist_name
     
-    with open('./data/playlists.txt', 'w') as f: f.write(str(playlists))
+    with open('./data/playlists.txt', 'w', encoding='utf-8') as f: f.write(str(playlists))
     return playlist_id
 
 def formataDuracao(horas, minutos, segundos):
@@ -419,22 +418,22 @@ def favoritos(username):
     return inputOpts(opcoes)
 
 def getUsers():
-    with open('./data/users.txt', 'r') as f:
+    with open('./data/users.txt', 'r', encoding='utf-8') as f:
         try: return ast.literal_eval(f.read())
         except: return []
 
 def getVideos():
-    with open('./data/videos.txt', 'r') as f:
+    with open('./data/videos.txt', 'r', encoding='utf-8') as f:
         try: return ast.literal_eval(f.read())
         except: return []
 
 def getAllFavoritesOrDislikes(file):
-    with open(f'./data/{file}.txt', 'r') as f:
+    with open(f'./data/{file}.txt', 'r', encoding='utf-8') as f:
         try: return ast.literal_eval(f.read())
         except: return []
 
 def getUserFavoritesOrDisliked(username, file):
-    with open(f'./data/{file}.txt', 'r') as f:
+    with open(f'./data/{file}.txt', 'r', encoding='utf-8') as f:
         try: 
             items = ast.literal_eval(f.read())
             for item in items:
@@ -450,12 +449,12 @@ def getUserFavoritesOrDisliked(username, file):
                 return {"user": username, "descurtidos": []}
 
 def getAllPlaylists():
-    with open('./data/playlists.txt', 'r') as f:
+    with open('./data/playlists.txt', 'r', encoding='utf-8') as f:
         try: return ast.literal_eval(f.read())
         except: return []
 
 def getUserPlaylists(username):
-    with open('./data/playlists.txt', 'r') as f:
+    with open('./data/playlists.txt', 'r', encoding='utf-8') as f:
         try: 
             playlists = ast.literal_eval(f.read())
             userPlaylists = []
@@ -740,10 +739,10 @@ def removeAllUserData(username):
     for playlist in playlists:
         if playlist['user'] == username: playlists_to_del.append(playlist)
     for playlist in playlists_to_del: playlists.remove(playlist)
-    with open('./data/videos.txt', 'w') as f: f.write(str(videos))
-    with open('./data/favs.txt', 'w') as f: f.write(str(favs))
-    with open('./data/dislikes.txt', 'w') as f: f.write(str(dislikes))
-    with open('./data/playlists.txt', 'w') as f: f.write(str(playlists))
+    with open('./data/videos.txt', 'w', encoding='utf-8') as f: f.write(str(videos))
+    with open('./data/favs.txt', 'w', encoding='utf-8') as f: f.write(str(favs))
+    with open('./data/dislikes.txt', 'w', encoding='utf-8') as f: f.write(str(dislikes))
+    with open('./data/playlists.txt', 'w', encoding='utf-8') as f: f.write(str(playlists))
 
 def removeUser():
     user_id = ''
@@ -774,7 +773,7 @@ def removeUser():
             break
     
     removeAllUserData(username)
-    with open('./data/users.txt', 'w') as f: f.write(str(users))
+    with open('./data/users.txt', 'w', encoding='utf-8') as f: f.write(str(users))
     return 'T'
 
 def removeVideo(playlist_id):
@@ -793,7 +792,7 @@ def removeVideo(playlist_id):
     for i in range(len(playlists)):
         if playlists[i]['id'] == playlist_id: playlists[i] = playlist
 
-    with open('./data/playlists.txt', 'w') as f: f.write(str(playlists))
+    with open('./data/playlists.txt', 'w', encoding='utf-8') as f: f.write(str(playlists))
     return playlist_id
 
 def uploadVideo(user):
@@ -852,7 +851,7 @@ def uploadVideo(user):
 
     videos.append(video)
 
-    with open('./data/videos.txt', 'w') as f:
+    with open('./data/videos.txt', 'w', encoding='utf-8') as f:
         f.write(str(videos))
 
 def usersPage():
