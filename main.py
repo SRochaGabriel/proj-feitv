@@ -1,6 +1,7 @@
 from utils import init, cadastro, login, uploadVideo, clear, perfil, deletarConta, editarConta, playlists, criarPlaylist, videoDetails, curtir_descurtir, buscar, favoritos, deletarVideo, editarVideo, addToPlaylist, playlistDetails, deletarPlaylist, editarPlaylist, removeVideo, usersPage, removeUser, verPerfil
 import os
 
+if not os.path.exists('./data'): os.mkdir('./data')
 if not os.path.exists('./data/users.txt'): open('./data/users.txt', 'a')
 if not os.path.exists('./data/videos.txt'): open('./data/videos.txt', 'a')
 if not os.path.exists('./data/playlists.txt'): open('./data/playlists.txt', 'a')
