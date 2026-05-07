@@ -12,6 +12,7 @@ cat << EOF > FeiTV.desktop
 Type=Application
 Exec="${TARGET_EXEC}"
 Icon=${TARGET_ICON}
+Path=${dir}
 Terminal=true
 EOF
 
