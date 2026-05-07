@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['main.py'],
+    ['../main.py'],
     pathex=[],
     binaries=[],
     datas=[('../icons/icon.png', '.'), ('../data', 'data/'), ('../scripts_os/gerar_atalho.sh', '.')],
@@ -42,5 +42,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='FeiTV',
+    name='FeiTV_L',
 )
