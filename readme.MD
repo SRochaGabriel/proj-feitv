@@ -2,6 +2,9 @@
 O projeto FeiTV é uma aplicação de linha de comando desenvolvida em Python que busca funcionar conceitualmente de forma similar a uma plataforma como o Youtube.  
 
 ## Sumário
+- [Funcionalidades](#funcionalidades)  
+- [Detalhes](#detalhes)  
+- [Download e Uso](#download-e-uso)
 
 ## Funcionalidades
 ### Para usuários comuns:
@@ -20,7 +23,8 @@ O projeto FeiTV é uma aplicação de linha de comando desenvolvida em Python qu
 
 ## Detalhes
 ### Como a aplicação funciona?
-A aplicação utiliza arquivos .txt como seu banco de dados, cada um desses arquivos armazena uma lista de dicionários convertida em string. Para a leitura e manipulação dos dados armazenados, a função **literal_eval** do módulo **ast** realiza a conversão desses dados em string para objeto (nesse caso, uma lista de dicionários) novamente.
+A aplicação utiliza arquivos .txt como seu banco de dados, cada um desses arquivos armazena uma lista de dicionários convertida em string. Para a leitura e manipulação dos dados armazenados, a função **literal_eval** do módulo **ast** realiza a conversão desses dados em string para objeto (nesse caso, uma lista de dicionários) novamente.  
+A todo o momento da execução o usuário recebe diversas opções de interação (por exemplo, digitar S para sair ou Q para iniciar uma função de pesquisa de vídeos), a opção selecionada pelo usuário é enviada para o fluxo principal da operação, que chama uma função de acordo. Toda função, no final, permite que o usuário envie novamente uma opção para o fluxo principal, garantindo que a aplicação continue em funcionamento até que o usuário opte por sair.
 ### Arquivos e diretórios
 - **main.py**: Define o fluxo geral da aplicação.  
 Primeiro, garante que o diretório e os arquivos que funcionam como base de dados da aplicação existam para serem manipulados.  
