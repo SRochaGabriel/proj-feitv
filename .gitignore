@@ -1,8 +1,5 @@
 __pycache__/
 data/*
-!data/.gitkeep
 venv/
 build/
 dist/
-icon.ico
-FeiTV.spec
