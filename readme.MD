@@ -35,6 +35,7 @@ Lida também com o estado de autenticação do usuário em uma conta.
 - **utils.py**: Módulo com todas as funções que a aplicação deve ser capaz de executar.  
 Nesse arquivo estão salvas variadas funções que permitem o funcionamento da aplicação, desde funções relacionadas a manipulação dos dados (cadastro, exclusão de conta, upload de vídeo, edição das informações do vídeo, etc.) até funções relacionadas a interface com a qual o usuário interage (listagem de vídeos e usuários em formato de tabela, exibição de "letreiro" da plataforma, limpeza das informações da tela, exibição do perfil de um usuário, etc.)
 - **icons/**: Diretório com ícones para os executáveis da aplicação em formato .ico para plataforma Windows e .png para plataforma Linux.
+- **doc_assets/**: Imagens de documentação para o readme do repositório.
 - **scripts_os/**: Arquivos de linha de comando que realizam a mesma função, ao serem executados, verificam o caminho absoluto do executável da aplicação no computador e, a partir desse caminho, geram um atalho que possa executar a aplicação de qualquer local.  
     - **gerar_atalho.bat**: Arquivo para o Windows, que gera o atalho na área de trabalho do usuário.
     - **gerar_atalho.sh**: Arquivo para Linux, que gera o atalho no mesmo diretório do executável da aplicação.
