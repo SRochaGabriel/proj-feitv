@@ -5,7 +5,7 @@ a = Analysis(
     ['../main.py'],
     pathex=[],
     binaries=[],
-    datas=[('../icons/icon.png', '.'), ('../data', 'data/'), ('../scripts_os/gerar_atalho.sh', '.')],
+    datas=[('../icons/icon.png', '.'), ('../data', 'data/')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
