@@ -36,9 +36,6 @@ Lida também com o estado de autenticação do usuário em uma conta.
 Nesse arquivo estão salvas variadas funções que permitem o funcionamento da aplicação, desde funções relacionadas a manipulação dos dados (cadastro, exclusão de conta, upload de vídeo, edição das informações do vídeo, etc.) até funções relacionadas a interface com a qual o usuário interage (listagem de vídeos e usuários em formato de tabela, exibição de "letreiro" da plataforma, limpeza das informações da tela, exibição do perfil de um usuário, etc.)
 - **icons/**: Diretório com ícones para os executáveis da aplicação em formato .ico para plataforma Windows e .png para plataforma Linux.
 - **doc_assets/**: Imagens de documentação para o readme do repositório.
-- **scripts_os/**: Arquivos de linha de comando que realizam a mesma função, ao serem executados, verificam o caminho absoluto do executável da aplicação no computador e, a partir desse caminho, geram um atalho que possa executar a aplicação de qualquer local.  
-    - **gerar_atalho.bat**: Arquivo para o Windows, que gera o atalho na área de trabalho do usuário.
-    - **gerar_atalho.sh**: Arquivo para Linux, que gera o atalho no mesmo diretório do executável da aplicação.
 - **specs/**: Arquivos .spec que especificam as configurações a serem usadas pelo Pyinstaller para construção dos executáveis de acordo com a plataforma (Windows ou Linux).
 ### Modelo de dados
 Na fase de planejamento do programa, um modelo entidade-relacionamento foi construído para guiar a ideia de como armazenar e relacionar os dados:  
@@ -67,29 +64,24 @@ Na prática, durante a implementação dos arquivos de dados em formato .txt, fo
 **Link para download: [FeiTV_L.zip](https://github.com/SRochaGabriel/proj-feitv/releases/download/v1.0/FeiTV_L.zip)**  
 O diretório descompactado estará assim:  
 
-![Diretório no Linux](./doc_assets/linux_exe_dir_screenshot.png)  
+![Diretório no Linux](./doc_assets/linux_dir_screenshot.png)  
 
-O executável **FeiTV** deverá ser mantido na pasta e executado pelo terminal com o comando ```./FeiTV``` (caso esteja no diretório do executável, caso contrário, o caminho até o executável virá antes da /).  
+O executável **FeiTV** deverá ser mantido na pasta e executado pelo terminal com o comando ```./FeiTV``` (caso esteja no diretório do executável, caso contrário, o caminho até o executável virá antes da /). Para executar a aplicação de fora do diretório do executável, crie um atalho .desktop.  
 Caso esteja iniciando o aplicativo pela primeira vez e receba um erro de permissão negada, basta utilizar o comando ```chmod +x ./FeiTV``` para permitir a execução ou, então, abrir as propriedas do arquivo e, na aba "Permissões", marcar a caixa de permissão como na imagem:  
 
 ![Marcando permissão de execução](./doc_assets/linux_permissao_feitv_screenshot.png)  
 
-Para gerar um atalho **FeiTV.destkop**, basta executar o arquivo **gerar_atalho.sh**.  
-Para executá-lo pelo terminal utilize o comando ```./gerar_atalho.sh``` (caso esteja no diretório do executável, caso contrário, o caminho até o executável virá antes da /). Caso ocorra um erro por permissão negada, basta utilizar o comando ```chmod +x ./gerar_atalho.sh```.  
-Para executá-lo com dois cliques, antes utilize o comando ```chmod +x ./gerar_atalho.sh``` no terminal ou então, abra as propriedades do arquivo e, na aba "Permissões", marque a caixa de permissão como na imagem:  
-
-![Marcando permissão de execução](./doc_assets/linux_permissao_sh_screenshot.png)
 ### Windows: 
 **Link para download: [FeiTV_W.zip](https://github.com/SRochaGabriel/proj-feitv/releases/download/v1.0/FeiTV_W.zip)**  
 O diretório descompactado estará assim:  
 
-![Diretório no Windows](./doc_assets/windows_exe_dir_screenshot.png)  
+![Diretório no Windows](./doc_assets/windows_dir_screenshot.png)  
 
-O executável **FeiTV** precisa ser mantido na pasta para funcionar corretamente. Para não precisar abrir o diretório sempre que for iniciar a aplicação, o usuário pode criar um atalho por conta própria ou executar o arquivo **gerar_atalho** que irá gerar um atalho na Área de Trabalho do computador automaticamente.
+O executável **FeiTV** precisa ser mantido na pasta para funcionar corretamente. Para não precisar abrir o diretório sempre que for iniciar a aplicação, o usuário pode criar um atalho.
 ### Clonando o repositório ou baixando o código:
 Caso tenha clonado ou realizado download do código do projeto, basta executar o arquivo **main.py**  
 - No Linux: ```python3 ./main.py```  
 - No Windows: ```python ./main.py```  
 
-Para compilar o programa, os arquivos .spec já estão configurados para que o Pyinstaller gere um diretório com tudo necessário para o funcionamento do executável, junto com os dados presentes nos arquivos .txt no momento da compilação, o ícone da aplicação e os arquivos .bat e .sh que geram atalhos.  
+Para compilar o programa, os arquivos .spec já estão configurados para que o Pyinstaller gere um diretório com tudo necessário para o funcionamento do executável, junto com os dados presentes nos arquivos .txt no momento da compilação e o ícone da aplicação.  
 Com o Pyinstaller instalado no Python, o comando ```pyinstaller [nomeDoArquivo].spec``` irá compilar o projeto de acordo com as especificações do arquivo.
