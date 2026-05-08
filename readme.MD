@@ -1,4 +1,6 @@
 # FeiTV
+![Tela inicial](./doc_assets/feitv_initial_screen.png)
+
 O projeto FeiTV é uma aplicação de linha de comando desenvolvida em Python que busca funcionar conceitualmente de forma similar a uma plataforma como o Youtube.  
 
 ## Sumário
@@ -38,7 +40,9 @@ Nesse arquivo estão salvas variadas funções que permitem o funcionamento da a
     - **gerar_atalho.sh**: Arquivo para Linux, que gera o atalho no mesmo diretório do executável da aplicação.
 - **specs/**: Arquivos .spec que especificam as configurações a serem usadas pelo Pyinstaller para construção dos executáveis de acordo com a plataforma (Windows ou Linux).
 ### Modelo de dados
-Na fase de planejamento do programa, um modelo entidade-relacionamento foi construído para guiar a ideia de como armazenar e relacionar os dados:
+Na fase de planejamento do programa, um modelo entidade-relacionamento foi construído para guiar a ideia de como armazenar e relacionar os dados:  
+
+![Modelo-ER](./doc_assets/erdplus.png)  
 
 Na prática, durante a implementação dos arquivos de dados em formato .txt, foram realizadas as seguintes alterações:
 - **Usuários**:
@@ -50,7 +54,8 @@ Na prática, durante a implementação dos arquivos de dados em formato .txt, fo
 - **Playlists**:
     - A data de criação da playlist foi removida;
     - Um ID autoincremental para a playlist foi criado;
-    - Um campo "vídeos" que armazena uma lista com os IDs dos vídeos que estão incluídos na playlist.
+    - Um campo "vídeos" que armazena uma lista com os IDs dos vídeos que estão incluídos na playlist;
+    - Um campo que associa a playlist ao usuário a qual ela pertence.
 - **Favoritos**:
     - Arquivo que associa um usuário a uma lista que armazena os IDs de todos os vídeos curtidos por ele.
 - **Dislikes**:
@@ -58,19 +63,26 @@ Na prática, durante a implementação dos arquivos de dados em formato .txt, fo
 ## Download e Uso
 **Observação**: As pastas compactadas disponibilizadas abaixo contém dados de mockup já adicionados nela para teste da aplicação.
 ### Linux:
-Link para download: **[FeiTV_L.zip](https://github.com/SRochaGabriel/proj-feitv/releases/download/v1.0/FeiTV_L.zip)**  
-O diretório descompactado estará assim:
+**Link para download: [FeiTV_L.zip](https://github.com/SRochaGabriel/proj-feitv/releases/download/v1.0/FeiTV_L.zip)**  
+O diretório descompactado estará assim:  
+
+![Diretório no Linux](./doc_assets/linux_exe_dir_screenshot.png)  
 
 O executável **FeiTV** deverá ser mantido na pasta e executado pelo terminal com o comando ```./FeiTV``` (caso esteja no diretório do executável, caso contrário, o caminho até o executável virá antes da /).  
-Caso esteja iniciando o aplicativo pela primeira vez e receba um erro de permissão negada, basta utilizar o comando ```chmod +x ./FeiTV``` para permitir a execução ou, então, abrir as propriedas do arquivo e, na aba "Permissões", marcar a caixa de permissão como na imagem:
+Caso esteja iniciando o aplicativo pela primeira vez e receba um erro de permissão negada, basta utilizar o comando ```chmod +x ./FeiTV``` para permitir a execução ou, então, abrir as propriedas do arquivo e, na aba "Permissões", marcar a caixa de permissão como na imagem:  
+
+![Marcando permissão de execução](./doc_assets/linux_permissao_feitv_screenshot.png)  
 
 Para gerar um atalho **FeiTV.destkop**, basta executar o arquivo **gerar_atalho.sh**.  
 Para executá-lo pelo terminal utilize o comando ```./gerar_atalho.sh``` (caso esteja no diretório do executável, caso contrário, o caminho até o executável virá antes da /). Caso ocorra um erro por permissão negada, basta utilizar o comando ```chmod +x ./gerar_atalho.sh```.  
 Para executá-lo com dois cliques, antes utilize o comando ```chmod +x ./gerar_atalho.sh``` no terminal ou então, abra as propriedades do arquivo e, na aba "Permissões", marque a caixa de permissão como na imagem:  
 
+![Marcando permissão de execução](./doc_assets/linux_permissao_sh_screenshot.png)
 ### Windows: 
-Link para download: **[FeiTV_W.zip](https://github.com/SRochaGabriel/proj-feitv/releases/download/v1.0/FeiTV_W.zip)**  
-O diretório descompactado estará assim:
+**Link para download: [FeiTV_W.zip](https://github.com/SRochaGabriel/proj-feitv/releases/download/v1.0/FeiTV_W.zip)**  
+O diretório descompactado estará assim:  
+
+![Diretório no Windows](./doc_assets/windows_exe_dir_screenshot.png)  
 
 O executável **FeiTV** precisa ser mantido na pasta para funcionar corretamente. Para não precisar abrir o diretório sempre que for iniciar a aplicação, o usuário pode criar um atalho por conta própria ou executar o arquivo **gerar_atalho** que irá gerar um atalho na Área de Trabalho do computador automaticamente.
 ### Clonando o repositório ou baixando o código:
